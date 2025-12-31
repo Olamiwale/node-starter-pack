@@ -30,11 +30,14 @@ export class AuthService {
 
 
   static async login(email: string, password: string) {
+
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) throw new Error("Invalid credentials");
 
   const valid = await comparePassword(password, user.password);
   if (!valid) throw new Error("Invalid credentials");
+
+  if (!user.accountId) throw new Error("User has no account");
 
   const accessToken = signAccessToken({
     id: user.id,
@@ -53,22 +56,25 @@ export class AuthService {
 
 
 
-
-
-
   static async refresh(refreshToken: string) {
     const stored = await findRefreshToken(refreshToken);
     if (!stored) throw new Error("Invalid refresh token");
 
     await deleteRefreshToken(refreshToken);
 
-    // fetch user to get role
+   
     const user = await prisma.user.findUnique({
       where: { id: stored.userId },
-      select: { id: true, role: true },
+      select: { 
+        id: true, 
+        role: true,
+        accountId: true
+      },
     });
 
-    if (!user) throw new Error("User not found");
+    if (!user || !user.accountId) {
+      throw new Error("User not found");
+    } 
 
     const accessToken = signAccessToken({
       id: user.id,
