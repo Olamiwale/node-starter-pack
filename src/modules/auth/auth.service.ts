@@ -30,29 +30,31 @@ export class AuthService {
 
 
   static async login(email: string, password: string) {
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) throw new Error("Invalid credentials");
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw new Error("Invalid credentials");
 
-    const valid = await comparePassword(password, user.password);
-    if (!valid) throw new Error("Invalid credentials");
+  const valid = await comparePassword(password, user.password);
+  if (!valid) throw new Error("Invalid credentials");
 
-    const accessToken = signAccessToken({
-      userId: user.id,
-      role: user.role,
-    });
+  const accessToken = signAccessToken({
+    id: user.id,
+    role: user.role,
+    accountId: user.accountId,
+  });
 
-    const refreshToken = signRefreshToken({
-      userId: user.id,
-      role: user.role,
-    });
+  const refreshToken = signRefreshToken({
+    id: user.id,
+    role: user.role,
+    accountId: user.accountId,
+  });
 
-    const expires = new Date();
-    expires.setDate(expires.getDate() + 7);
+  return { accessToken, refreshToken };
+}
 
-    await saveRefreshToken(user.id, refreshToken, expires);
 
-    return { accessToken, refreshToken };
-  }
+
+
+
 
   static async refresh(refreshToken: string) {
     const stored = await findRefreshToken(refreshToken);
@@ -69,13 +71,15 @@ export class AuthService {
     if (!user) throw new Error("User not found");
 
     const accessToken = signAccessToken({
-      userId: user.id,
+      id: user.id,
       role: user.role,
+      accountId: user.accountId,
     });
 
     const newRefreshToken = signRefreshToken({
-      userId: user.id,
+      id: user.id,
       role: user.role,
+      accountId: user.accountId,
     });
 
     const expires = new Date();
