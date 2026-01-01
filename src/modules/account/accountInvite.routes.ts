@@ -6,9 +6,18 @@ import { AccountInviteController } from "./accountInvite.controller";
 const router = Router();
 
 // Invite a user (OWNER / ADMIN only)
-router.post("/invite", authMiddleware, requireRole(["OWNER", "ADMIN"]), AccountInviteController.invite);
+router.post(
+    "/invite", 
+    authMiddleware, 
+    requireRole(["OWNER", "ADMIN"]), 
+    AccountInviteController.invite
+);
 
 // Accept an invite
-router.post("/invite/accept", authMiddleware, AccountInviteController.accept);
+router.post(
+    "/invite/accept", 
+    authMiddleware, 
+    AccountInviteController.accept
+);
 
 export default router;

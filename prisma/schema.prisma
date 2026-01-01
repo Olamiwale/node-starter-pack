@@ -8,16 +8,31 @@ datasource db {
 }
 
 model Account {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   name       String
-  isVerified Boolean  @default(false)
+  isVerified Boolean   @default(false)
   verifiedAt DateTime?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 
-  members   AccountMember[]
+  invites AccountInvite[]
+
+  members            AccountMember[]
   verificationTokens AccountVerificationToken[] @relation("AccountToVerificationToken")
 }
 
+model AccountInvite {
+  id         String    @id @default(uuid())
+  accountId  String
+  email      String
+  role       String
+  token      String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  @@index([email])
+}
 
 model AccountVerificationToken {
   id        String   @id @default(uuid())
@@ -26,11 +41,10 @@ model AccountVerificationToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
 
-  account   Account  @relation("AccountToVerificationToken", fields: [accountId], references: [id])
+  account Account @relation("AccountToVerificationToken", fields: [accountId], references: [id])
 
   @@unique([accountId])
 }
-
 
 model User {
   id        String   @id @default(uuid())
@@ -45,11 +59,11 @@ model User {
 }
 
 model AccountMember {
-  id        String   @id @default(uuid())
+  id        String      @id @default(uuid())
   accountId String
   userId    String
   role      AccountRole @default(MEMBER)
-  createdAt DateTime @default(now())
+  createdAt DateTime    @default(now())
 
   account Account @relation(fields: [accountId], references: [id])
   user    User    @relation(fields: [userId], references: [id])

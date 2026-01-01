@@ -29,7 +29,7 @@ export class AccountInviteService {
         data: {
           accountId: invite.accountId,
           userId,
-          role: invite.role,
+          role: invite.role as AccountRole,
         },
       }),
       prisma.accountInvite.update({

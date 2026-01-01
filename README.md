@@ -272,100 +272,38 @@ npx prisma migrate dev --name init
 ```
 
 
-PHASE 2
+##How to access postgress database
 
+1️⃣ Open PostgreSQL shell
 
-👉 NEXT STEP (DO NOT SKIP):
+```bash
+psql "postgresql://saas_user:strongpassword@localhost:5432/saas_db"
+```
+(Use the exact values from your `.env`)
 
-Build Auth Utilities
+---
 
-Password hashing
+2️⃣ List verification tokens
 
-JWT utilities
+```sql
+SELECT token, "accountId", "expiresAt"
+FROM "AccountVerificationToken"
+ORDER BY "createdAt" DESC;
+```
 
-Auth service
+---
+3️⃣ Copy the token value
 
-This is where your starter kit starts becoming valuable.
+You’ll see something like:
 
+```text
+6f3c2c9a-3e7a-4c6a-9c4a-1b9e8e2d1a44
+```
 
+---
+4️⃣ Use it in the browser / Postman
 
-prisma schema example 'generator client {
-  provider = "prisma-client-js"
-}
+```text
+http://localhost:4000/auth/verify-account?token=6f3c2c9a-3e7a-4c6a-9c4a-1b9e8e2d1a44
+```
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model Account {
-  id        String   @id @default(uuid())
-  name      String
-  createdAt DateTime @default(now())
-  users     User[]
-}
-
-
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String?
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-
-  accountId String?  
-  account   Account?  @relation(fields: [accountId], references: [id])
-
-  teams     TeamMember[]
-  tokens    RefreshToken[]
-}
-
-
-model Team {
-  id        String   @id @default(uuid())
-  name      String
-  ownerId   String
-  createdAt DateTime @default(now())
-
-  members   TeamMember[]
-  projects  Project[]
-}
-
-model TeamMember {
-  id        String   @id @default(uuid())
-  userId    String
-  teamId    String
-  role      Role
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-  team Team @relation(fields: [teamId], references: [id])
-
-  @@unique([userId, teamId])
-}
-
-model Project {
-  id        String   @id @default(uuid())
-  name      String
-  teamId    String
-  createdAt DateTime @default(now())
-
-  team Team @relation(fields: [teamId], references: [id])
-}
-
-model RefreshToken {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  userId    String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-}
-
-enum Role {
-  ADMIN
- USER
-}
-'

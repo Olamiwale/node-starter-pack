@@ -11,4 +11,7 @@ router.post("/login", rateLimitMiddleware, validate(loginSchema), AuthController
 router.post("/refresh", validate(refreshSchema), AuthController.refresh);
 router.post("/logout", validate(refreshSchema), AuthController.logout);
 
+
+router.get("/verify-account", AuthController.verifyAccount);
+
 export default router;

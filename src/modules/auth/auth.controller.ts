@@ -14,6 +14,14 @@ export class AuthController {
     res.json(tokens);
   }
 
+  static async verifyAccount(req: Request, res: Response) {
+  const { token } = req.query;
+
+  await AuthService.verifyAccount(token as string);
+  res.json({ message: "Account verified" });
+}
+
+
   static async refresh(req: Request, res: Response) {
     const { refreshToken } = req.body;
     const tokens = await AuthService.refresh(refreshToken);

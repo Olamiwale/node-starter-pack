@@ -13,11 +13,11 @@ router.put("/me", authMiddleware, UserController.updateMe);
 
 
 
-router.get("/", authMiddleware, requireRole("ADMIN"), UserController.getAllUsers);
+router.get("/", authMiddleware, requireRole(["ADMIN"]), UserController.getAllUsers);
 router.patch(
   "/:id/role",
   authMiddleware,
-  requireRole("ADMIN"),
+  requireRole(["ADMIN"]),
   UserController.updateUserRole
 );
 

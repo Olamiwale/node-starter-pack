@@ -32,4 +32,6 @@ app.use("/users", userRoutes);
 app.use(helmet());
 
 app.use("api/accounts", accountInviteRoutes);
+app.use("/account", accountInviteRoutes);
 
+ 
