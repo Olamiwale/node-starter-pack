@@ -1,8 +1,9 @@
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "./auth.middleware";
+import { AccountRole } from "@prisma/client";
 
 export const requireRole =
-  (...roles: Array<"USER" | "ADMIN">) =>
+  (...roles: Array<AccountRole>) =>
   (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
@@ -13,3 +14,20 @@ export const requireRole =
 
     next();
   };
+
+
+
+  /*
+  import { Response, NextFunction } from "express";
+import { AuthRequest } from "./auth.middleware";
+
+export const requireRole =
+  (roles: string[]) =>
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    next();
+  };
+
+  */

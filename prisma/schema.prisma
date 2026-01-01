@@ -8,10 +8,27 @@ datasource db {
 }
 
 model Account {
+  id         String   @id @default(uuid())
+  name       String
+  isVerified Boolean  @default(false)
+  verifiedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  members   AccountMember[]
+  verificationTokens AccountVerificationToken[] @relation("AccountToVerificationToken")
+}
+
+
+model AccountVerificationToken {
   id        String   @id @default(uuid())
-  name      String
+  accountId String
+  token     String   @unique
+  expiresAt DateTime
   createdAt DateTime @default(now())
-  users     User[]
+
+  account   Account  @relation("AccountToVerificationToken", fields: [accountId], references: [id])
+
+  @@unique([accountId])
 }
 
 
@@ -23,44 +40,21 @@ model User {
   role      Role     @default(USER)
   createdAt DateTime @default(now())
 
-  accountId String?  
-  account   Account?  @relation(fields: [accountId], references: [id])
-
-  teams     TeamMember[]
-  tokens    RefreshToken[]
+  memberships AccountMember[]
+  tokens      RefreshToken[]
 }
 
-
-model Team {
+model AccountMember {
   id        String   @id @default(uuid())
-  name      String
-  ownerId   String
-  createdAt DateTime @default(now())
-
-  members   TeamMember[]
-  projects  Project[]
-}
-
-model TeamMember {
-  id        String   @id @default(uuid())
+  accountId String
   userId    String
-  teamId    String
-  role      Role
+  role      AccountRole @default(MEMBER)
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
-  team Team @relation(fields: [teamId], references: [id])
+  account Account @relation(fields: [accountId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
 
-  @@unique([userId, teamId])
-}
-
-model Project {
-  id        String   @id @default(uuid())
-  name      String
-  teamId    String
-  createdAt DateTime @default(now())
-
-  team Team @relation(fields: [teamId], references: [id])
+  @@unique([accountId, userId])
 }
 
 model RefreshToken {
@@ -75,5 +69,11 @@ model RefreshToken {
 
 enum Role {
   ADMIN
- USER
+  USER
+}
+
+enum AccountRole {
+  OWNER
+  ADMIN
+  MEMBER
 }
