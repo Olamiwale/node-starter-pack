@@ -307,3 +307,32 @@ You’ll see something like:
 http://localhost:4000/auth/verify-account?token=6f3c2c9a-3e7a-4c6a-9c4a-1b9e8e2d1a44
 ```
 
+
+
+
+
+
+
+
+**`src/modules/auth/auth.service.ts`**
+
+**`src/modules/auth/auth.controller.ts`**
+
+**`src/modules/account/accountInvite.service.ts`**
+
+**`src/modules/account/accountInvite.controller.ts`**
+
+
+**`src/services/email/email.service.ts`**
+
+* Generic email sender interface
+* Dev-safe (console/log or SMTP later)
+
+**`src/services/email/templates/accountInvite.ts`**
+
+* Invite email template
+* Accept-invite URL builder
+
+**`src/services/email/templates/verifyAccount.ts`**
+
+

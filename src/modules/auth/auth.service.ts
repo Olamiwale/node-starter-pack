@@ -43,36 +43,59 @@ export class AuthService {
   }
 
 
+  // ===============================Verify Account===================================
+
+
   static async verifyAccount(token: string) {
+  // Delete expired tokens first (cleanup)
+  await prisma.accountVerificationToken.deleteMany({
+    where: { expiresAt: { lt: new Date() } },
+  });
+
   const record = await prisma.accountVerificationToken.findUnique({
     where: { token },
-    include: { account: true },
   });
 
   if (!record) {
-    throw new Error("Invalid verification token");
+    throw Object.assign(new Error("Invalid or expired token"), { status: 400 });
   }
 
-  if (record.expiresAt < new Date()) {
-    throw new Error("Verification token expired");
-  }
-
-  await prisma.$transaction(async (tx) => {
-    await tx.account.update({
+  await prisma.$transaction([
+    prisma.account.update({
       where: { id: record.accountId },
-      data: {
-        isVerified: true,
-        verifiedAt: new Date(),
-      },
-    });
-
-    await tx.accountVerificationToken.delete({
+      data: { isVerified: true, verifiedAt: new Date() },
+    }),
+    prisma.accountVerificationToken.delete({
       where: { id: record.id },
-    });
+    }),
+  ]);
+
+  const member = await prisma.accountMember.findFirst({
+    where: { accountId: record.accountId },
   });
 
-  return { success: true };
+  if (!member) throw new Error("Account membership not found");
+
+  const accessToken = signAccessToken({
+    id: member.userId,
+    role: member.role,
+    accountId: member.accountId,
+  });
+
+  const refreshToken = signRefreshToken({
+    id: member.userId,
+    role: member.role,
+    accountId: member.accountId,
+  });
+
+  const expires = new Date();
+  expires.setDate(expires.getDate() + 7);
+
+  await saveRefreshToken(member.userId, refreshToken, expires);
+
+  return { accessToken, refreshToken };
 }
+
 
 
 // ===============================Login===================================
@@ -155,6 +178,8 @@ export class AuthService {
       error.statusCode = 403;
       throw error;
     }
+
+    
 
     const accessToken = signAccessToken({
       id: user.id,

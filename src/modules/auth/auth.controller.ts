@@ -13,12 +13,16 @@ export class AuthController {
     const tokens = await AuthService.login(email, password);
     res.json(tokens);
   }
+  
 
   static async verifyAccount(req: Request, res: Response) {
   const { token } = req.query;
 
-  await AuthService.verifyAccount(token as string);
-  res.json({ message: "Account verified" });
+  const tokens = await AuthService.verifyAccount(token as string);
+  res.json({ 
+    message: "Account verified",
+    ...tokens,
+  });
 }
 
 
